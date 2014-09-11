@@ -17,5 +17,4 @@ protected:
 private:
     string host_;
     int port_;
-    bool debug_;
 };

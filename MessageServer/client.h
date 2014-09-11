@@ -12,6 +12,10 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <sstream>
+
+#include "util.h"
 
 using namespace std;
 
@@ -23,6 +27,8 @@ public:
     void run();
 
 protected:
+    bool parse_request(string request);
+    bool send_command(std::vector<std::string> tokens);
     virtual void create();
     virtual void close_socket();
     void echo();
@@ -32,4 +38,6 @@ protected:
     int server_;
     int buflen_;
     char* buf_;
+
+    bool debug_;
 };
