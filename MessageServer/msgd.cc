@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "inet-server.h"
+#include "msg_server.h"
 
 using namespace std;
 
@@ -32,6 +32,6 @@ main(int argc, char **argv)
         }
     }
 
-    //InetServer server = InetServer(port);
-    //server.run();
+    MsgServer server = MsgServer(port);
+    server.run();
 }

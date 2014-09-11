@@ -2,8 +2,8 @@
 
 CXX=			g++ $(CCFLAGS)
 
-MESSAGE-SERVER=		msgd.o 
-MESSAGE-CLIENT=		msg.o
+MESSAGE-SERVER=		msgd.o msg_server.o server.o
+MESSAGE-CLIENT=		msg.o msg_client.o client.o
 OBJS =			$(MESSAGE-SERVER) $(MESSAGE-CLIENT)
 
 LIBS=

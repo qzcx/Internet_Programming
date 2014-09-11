@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "inet-client.h"
+#include "msg_client.h"
 
 using namespace std;
 
@@ -35,7 +35,7 @@ main(int argc, char **argv)
         }
     }
 
-    //InetClient client = InetClient(host, port);
-    //client.run();
+    MsgClient client = MsgClient(port, server, debug);
+    client.run();
 }
 
