@@ -32,6 +32,6 @@ main(int argc, char **argv)
         }
     }
 
-    MsgServer server = MsgServer(port);
+    MsgServer server = MsgServer(port, debug);
     server.run();
 }

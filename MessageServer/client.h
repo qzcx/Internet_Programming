@@ -29,6 +29,8 @@ public:
 protected:
     bool parse_request(string request);
     bool send_command(std::vector<std::string> tokens);
+    bool list_command(std::vector<std::string> tokens);
+    bool read_command(std::vector<std::string> tokens);
     virtual void create();
     virtual void close_socket();
     void echo();

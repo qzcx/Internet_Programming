@@ -1,13 +1,25 @@
+#include <map>
+#include <iostream>
 #include "server.h"
+#include "util.h"
 
 Server::Server() {
     // setup variables
     buflen_ = 1024;
     buf_ = new char[buflen_+1];
+    messageMap_ = new messageMap();
 }
 
 Server::~Server() {
     delete buf_;
+    //delete messageMap_
+    std::map::iterator it;
+    for (it = messageMap_->begin(); it != messageMap_->end(); ++it)
+    {
+        delete it->second; // delete the vector inside the map.
+    }
+    delete messageMap_;
+
 }
 
 void
@@ -50,7 +62,7 @@ Server::handle(int client) {
         if (request.empty())
             break;
         // send response
-        bool success = send_response(client,request);
+        bool success = parse_request(client,request);
         // break if an error occurred
         if (not success)
             break;
@@ -81,6 +93,40 @@ Server::get_request(int client) {
     // a better server would cut off anything after the newline and
     // save it in a cache
     return request;
+}
+
+bool
+Server::parse_request(int client, string request) {
+    std::vector<std::string> tokens = util::split(request, ' ');
+    if(tokens.size() < 1){ //check vector length
+        cout<<"Invalid Command/n";
+        if(debug_) cout<<"split token < 1";
+        return false;
+    }
+    string command = tokens.at(0);
+    cout << command;
+    if(command == "put"){
+        return put_command(tokens);
+    }else if(command == "list"){
+        return list_command(tokens);
+    }else if(command == "get"){
+        return get_command(tokens);
+    }else if(command == "reset"){
+        exit(0);
+    }
+    return send_response(client,"error: invalid command");
+}
+
+bool Server::put_command(std::vector<std::string> tokens) {
+    return false;
+}
+
+bool Server::list_command(std::vector<std::string> tokens) {
+    return false;
+}
+
+bool Server::get_command(std::vector<std::string> tokens) {
+    return false;
 }
 
 bool

@@ -31,7 +31,7 @@ Client::echo() {
     // loop to handle user interface
     while (getline(cin,line)) {
         // send request
-        bool success = send_request(line);
+        bool success = parse_request(line);
         // break if an error occurred
         if (not success)
             break;
@@ -54,22 +54,24 @@ Client::parse_request(string request){
         return false;
     }
     string command = tokens.at(0);
+    cout << command;
     if(command == "send"){
         return send_command(tokens);
     }else if(command == "list"){
-
+        return list_command(tokens);
     }else if(command == "read"){
-
+        return read_command(tokens);
     }else if(command == "quit"){
         exit(0);
     }
+    request += "\n";
     return send_request(request);
 }
 
 bool
 Client::send_command(std::vector<std::string> tokens){
     if(tokens.size() < 3){ //check vector length
-        cout<<"send [user] [subject]/n";
+        cout<<"send [user] [subject]\n";
         if(debug_) cout<<"not enough arguments";
         return false;
     }
@@ -90,7 +92,43 @@ Client::send_command(std::vector<std::string> tokens){
     request << "put " << user;
     request << " " << subject;
     request << " " << message.length();
-    request << "\n" << message;
+    request << "\n" << message << "\n";
+    cout << request.str();
+    return send_request(request.str());
+}
+
+bool
+Client::list_command(std::vector<std::string> tokens){
+    if(tokens.size() < 2){ //check vector length
+        cout<<"list [user]\n";
+        if(debug_) cout<<"not enough arguments";
+        return false;
+    }
+    string user = tokens.at(1);
+
+    //create the request
+    std::stringstream request;
+    request << "list " << user;
+    request << "\n";
+    cout << request.str();
+    return send_request(request.str());
+}
+
+bool
+Client::read_command(std::vector<std::string> tokens){
+if(tokens.size() < 3){ //check vector length
+        cout<<"read [user] [index]\n";
+        if(debug_) cout<<"not enough arguments";
+        return false;
+    }
+    string user = tokens.at(1);
+    string index = tokens.at(2); 
+
+    //create the request
+    std::stringstream request;
+    request << "get " << user;
+    request << " " << index;
+    request << "\n";
     cout << request.str();
     return send_request(request.str());
 }
