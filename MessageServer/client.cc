@@ -30,10 +30,8 @@ Client::echo() {
     cout << "%";
     // loop to handle user interface
     while (getline(cin,line)) {
-        // append a newline
-        line += "\n";
         // send request
-        bool success = parse_request(line);
+        bool success = send_request(line);
         // break if an error occurred
         if (not success)
             break;
@@ -49,7 +47,7 @@ Client::echo() {
 
 bool
 Client::parse_request(string request){
-    std::vector<std::string> tokens = util::split(request, " ");
+    std::vector<std::string> tokens = util::split(request, ' ');
     if(tokens.size() < 1){ //check vector length
         cout<<"Invalid Command/n";
         if(debug_) cout<<"split token < 1";
@@ -58,7 +56,14 @@ Client::parse_request(string request){
     string command = tokens.at(0);
     if(command == "send"){
         return send_command(tokens);
+    }else if(command == "list"){
+
+    }else if(command == "read"){
+
+    }else if(command == "quit"){
+        exit(0);
     }
+    return send_request(request);
 }
 
 bool
@@ -75,13 +80,18 @@ Client::send_command(std::vector<std::string> tokens){
     string line;
     string message = "";
     getline(cin,line);
-    while(line != "\n"){
-        message += line;
+    while(!line.empty()){
+        message += line + "\n";
+        if(debug_) cout << line;
         getline(cin,line); //get next line
     }
     //create the request
     std::stringstream request;
-    request << "put " << user << " " << subject << " " << message.length() << "\n" << message;
+    request << "put " << user;
+    request << " " << subject;
+    request << " " << message.length();
+    request << "\n" << message;
+    cout << request.str();
     return send_request(request.str());
 }
 
