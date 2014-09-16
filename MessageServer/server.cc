@@ -118,15 +118,40 @@ Server::parse_request(int client, string request) {
 }
 
 bool Server::put_command(std::vector<std::string> tokens) {
-    return false;
+    string response;
+    if(tokens.size() < 4){ //check vector length
+        if(debug_) cout<<"not enough arguments";
+        return send_response("error: invalid formatted message");
+    }
+//check if user exists
+    //if not create vector
+    //add subject and message to the map
+    //respond OK
+
+    return send_response("OK\n");
 }
 
 bool Server::list_command(std::vector<std::string> tokens) {
-    return false;
+    if(tokens.size() < 2){ //check vector length
+        if(debug_) cout<<"not enough arguments";
+        return send_response("error: invalid formatted message");
+    }
+    string response;
+    //get vector assosiated with the name
+    //list [number]\n
+    //iterate through and add each subject with a index
+    return send_response(response);
 }
 
 bool Server::get_command(std::vector<std::string> tokens) {
-    return false;
+    if(tokens.size() < 3){ //check vector length
+        if(debug_) cout<<"not enough arguments";
+        return send_response("error: invalid formatted message");
+    }
+    string response;
+    //use user and inde to find message
+    //response = message [subject] [length]\n[message]
+    return send_response(response);
 }
 
 bool

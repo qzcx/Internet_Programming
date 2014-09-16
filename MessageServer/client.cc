@@ -8,12 +8,13 @@ Client::Client() {
 }
 
 Client::~Client() {
+    delete buf_;
 }
 
 void Client::run() {
     // connect to the server and run echo program
     create();
-    echo();
+    message();
 }
 
 void
@@ -25,7 +26,7 @@ Client::close_socket() {
 }
 
 void
-Client::echo() {
+Client::message() {
     string line;
     cout << "%";
     // loop to handle user interface
@@ -94,7 +95,13 @@ Client::send_command(std::vector<std::string> tokens){
     request << " " << message.length();
     request << "\n" << message << "\n";
     cout << request.str();
-    return send_request(request.str());
+    send_request(request.str());
+
+
+    string response = get_response();
+    if(response != "OK\n")
+        cout << response;
+    return true;
 }
 
 bool
@@ -182,6 +189,6 @@ Client::get_response() {
     }
     // a better client would cut off anything after the newline and
     // save it in a cache
-    cout << response;
-    return true;
+    
+    return response;
 }
