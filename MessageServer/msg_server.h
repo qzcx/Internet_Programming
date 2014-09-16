@@ -7,7 +7,7 @@
 class MsgServer : public Server {
 
 public:
-    MsgServer(int);
+    MsgServer(int, bool);
     ~MsgServer();
 
 protected:

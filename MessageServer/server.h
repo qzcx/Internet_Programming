@@ -4,14 +4,16 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <string>
-#include <set>
+#include <map>
 #include <vector>
+#include <iostream>
+#include <exception>
+#include "util.h"
 
 using namespace std;
 
@@ -28,25 +30,32 @@ protected:
     void serve();
     void handle(int);
     string get_request(int);
-    bool parse_request(int, string);
-    bool send_response(int, string);
 
-    bool put_command(std::vector<std::string> tokens);
-    bool list_command(std::vector<std::string> tokens);
-    bool get_command(std::vector<std::string> tokens);
+    string get_message(int, int);
+
+    bool parse_request(int, string);
+    bool send_response(int client, string response);
+
+    bool put_command(int client, std::vector<std::string> tokens);
+    bool list_command(int client, std::vector<std::string> tokens);
+    bool get_command(int client, std::vector<std::string> tokens);
 
 
     int server_;
     int buflen_;
     char* buf_;
 
-    struct message{
-        string subject;
-        string message;
+    struct Message{
+        string subject_;
+        string text_;
+        Message(string subject, string text){
+            subject_ = subject;
+            text_ = text;
+        }
     };
 
-    typedef map<string,vector<message>> messageMap;
-    messageMap *messageMap_;
+    typedef map<string,vector<Message*>* > MessageMap;
+    MessageMap *messageMap_;
     bool debug_;
 
 

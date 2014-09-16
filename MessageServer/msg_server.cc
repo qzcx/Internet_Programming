@@ -1,4 +1,5 @@
 #include "msg_server.h"
+#include <string.h>
 
 MsgServer::MsgServer(int port, bool debug) {
     // setup variables

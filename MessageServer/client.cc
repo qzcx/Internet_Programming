@@ -37,9 +37,9 @@ Client::message() {
         if (not success)
             break;
         // get a response
-        success = get_response();
+        string response = get_response();
         // break if an error occurred
-        if (not success)
+        if (response.empty()) //error if the string is empty
             break;
         cout<<"%";
     }
@@ -55,7 +55,7 @@ Client::parse_request(string request){
         return false;
     }
     string command = tokens.at(0);
-    cout << command;
+    //cout << command;
     if(command == "send"){
         return send_command(tokens);
     }else if(command == "list"){
@@ -167,7 +167,7 @@ Client::send_request(string request) {
     return true;
 }
 
-bool
+string
 Client::get_response() {
     string response = "";
     // read until we get a newline
