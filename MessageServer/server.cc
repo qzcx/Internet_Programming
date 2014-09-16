@@ -131,6 +131,7 @@ Server::parse_request(int client, string request) {
     string command = tokens.at(0);
     cout << command;
     if(command == "put"){
+        if(debug_) cout << "put command" << endl;
         return put_command(client, tokens);
     }else if(command == "list"){
         return list_command(client, tokens);
@@ -242,6 +243,7 @@ Server::get_command(int client,std::vector<std::string> tokens) {
 
 bool
 Server::send_response(int client, string response) {
+    if(debug_) cout<< "responding with :" << response << endl;
     // prepare to send response
     const char* ptr = response.c_str();
     int nleft = response.length();
