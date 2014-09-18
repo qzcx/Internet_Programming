@@ -97,7 +97,7 @@ Client::send_command(std::vector<std::string> tokens){
     //send_request(message);
 
     string response = get_response();
-    if(response != "OK\n")
+    if(response != "OK")
         cout << response << endl;
     if(debug_) cout << "responsed with: " <<response << endl;
     return true;
