@@ -32,6 +32,14 @@ protected:
     bool send_command(std::vector<std::string> tokens);
     bool list_command(std::vector<std::string> tokens);
     bool read_command(std::vector<std::string> tokens);
+
+
+    string get_message(int length);
+
+    string read_message(string);
+
+    void response_to_list(string response);
+    void response_to_read(string response);
     virtual void create();
     virtual void close_socket();
     void message();
@@ -41,6 +49,7 @@ protected:
     int server_;
     int buflen_;
     char* buf_;
+    string cache_;
 
     bool debug_;
 };

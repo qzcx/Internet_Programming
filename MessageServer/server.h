@@ -29,7 +29,7 @@ protected:
     virtual void close_socket();
     void serve();
     void handle(int);
-    string get_request(int);
+    string read_message(string);
 
     string get_message(int, int);
 
@@ -40,10 +40,13 @@ protected:
     bool list_command(int client, std::vector<std::string> tokens);
     bool get_command(int client, std::vector<std::string> tokens);
 
+    void store_message(string name, string subject, string message);
+    string get_subjects(string name);
 
     int server_;
     int buflen_;
     char* buf_;
+    string cache_;
 
     struct Message{
         string subject_;
