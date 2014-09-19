@@ -1,11 +1,13 @@
 #include "server.h"
 
+#define NUM_THREADS 10
+
 Server::Server() {
     // setup variables
     buflen_ = 1024;
     buf_ = new char[buflen_+1];
-    cache_ = "";
-    messageMap_ = new MessageMap();
+    messageMap_.m = new MessageMap();
+    clients_.q = new std::queue<int>();
     //store_message("jon","love","I love liana");
     //store_message("jon","dog","I love chewy");
     //store_message("jon","girl","I love my wife");
@@ -13,13 +15,12 @@ Server::Server() {
 
 Server::~Server() {
     delete buf_;
-    //delete messageMap_
-    //MessageMap::iterator it;
-    // for (it = messageMap_->begin(); it != messageMap_->end(); ++it)
-    // {
-    //     delete it->second; // delete the vector inside the map.
-    // }
-    delete messageMap_;
+    delete messageMap_.m;
+    delete clients_.q;
+
+    for(int i=0;i< NUM_THREADS; i++){
+        delete threads_[i];
+    }
 
 }
 
@@ -38,76 +39,109 @@ void
 Server::close_socket() {
 }
 
+void* threadHandle(void * ptr ){
+    ((Server *)ptr)->handle();
+}
+
 void
 Server::serve() {
+    //setup threads
+    sem_init(&messageMap_.s,0,1);
+    sem_init(&clients_.s,0,1);
+    sem_init(&clients_.n,0,1);
+
+
     // setup client
     int client;
     struct sockaddr_in client_addr;
     socklen_t clientlen = sizeof(client_addr);
 
+    threads_ = (pthread_t**)malloc(sizeof(pthread_t*));
+    for(int i=0; i<NUM_THREADS; i++){
+        threads_[i] = new pthread_t();
+        pthread_create(threads_[i], NULL, &threadHandle, this);
+    }
+
+
+
       // accept clients
     while ((client = accept(server_,(struct sockaddr *)&client_addr,&clientlen)) > 0) {
-
-        handle(client);
+        sem_wait(&clients_.s);
+        clients_.q->push(client);
+        sem_post(&clients_.s);
+        sem_post(&clients_.n);
     }
+
     close_socket();
 }
 
-void
-Server::handle(int client) {
-    // loop to handle all requests
-    string request;
-    while (1) {
-        // get a request
-        while (cache_.find("\n") == string::npos) {
-            //if(debug_) cout<<"waiting\n";
-            int nread = recv(client,buf_,1024,0);
-            if (nread < 0) {
-                if (errno == EINTR)
-                    // the socket call was interrupted -- try again
-                    continue;
-                else
-                    // an error occurred, so break out
+
+
+void 
+Server::handle() {
+    string cache = "";
+    int client;
+    while(1){
+        sem_wait(&clients_.n);
+        sem_wait(&clients_.s);
+        client = clients_.q->front();
+        clients_.q->pop();
+        sem_post(&clients_.s);
+        
+        // loop to handle all requests
+        string request;
+        while (1) {
+            // get a request
+            while (cache.find("\n") == string::npos) {
+                //if(debug_) cout<<"waiting\n";
+                int nread = recv(client,buf_,1024,0);
+                if (nread < 0) {
+                    if (errno == EINTR)
+                        // the socket call was interrupted -- try again
+                        continue;
+                    else
+                        // an error occurred, so break out
+                        break;
+                } else if (nread == 0) {
+                    // the socket is closed
                     break;
-            } else if (nread == 0) {
-                // the socket is closed
+                }
+                //if(debug_) cout<< "recieved: "<< buf_ << endl;
+                cache.append(buf_,nread);
+            }
+            request = read_message(cache, &cache);
+            if (request.empty()){
                 break;
             }
-            //if(debug_) cout<< "recieved: "<< buf_ << endl;
-            cache_.append(buf_,nread);
+            // send response
+            bool success = parse_request(client,request, &cache);
+            // break if an error occurred
+            //if(debug_) cout<< "I parsed and responsed: "<< cache << endl;
+            if (not success){
+                break;
+            }
         }
-        request = read_message(cache_);
-        if (request.empty()){
-            break;
-        }
-        // send response
-        bool success = parse_request(client,request);
-        // break if an error occurred
-        //if(debug_) cout<< "I parsed and responsed: "<< cache_ << endl;
-        if (not success){
-            break;
-        }
+        //cout << "something bad happened";
+        close(client);
     }
-    //cout << "something bad happened";
-    close(client);
 }
 
 
 string
-Server::read_message(string request){
+Server::read_message(string request, string* cache){
     int index = request.find("\n");
     if (index == string::npos){
         return "";
     }
     string message = request.substr(0,index);
-    cache_ = request.substr(index+1,string::npos);
+    (*cache) = request.substr(index+1,string::npos);
     return message;
 }
 
 string
-Server::get_message(int client, int length) {
-    string message = cache_; 
-    cache_ = "";
+Server::get_message(int client, int length, string* cache) {
+    string message = *cache; 
+    (*cache) = "";
     // read until we get a newline
     while (message.size() < length) {
         //8int readNow = (length - numRead) > 1024 ? 1024 : (length - numRead);
@@ -127,11 +161,11 @@ Server::get_message(int client, int length) {
         message.append(buf_,nread);
     }
     if(message.size() > length){
-        cache_ = message.substr(length+1,string::npos);
+        (*cache) = message.substr(length+1,string::npos);
         message = message.substr(0,length);
-        //if(debug_) cout<< "cache_ is now: " << cache_ << endl;
+        //if(debug_) cout<< "cache is now: " << cache << endl;
     }else{
-        cache_ = "";
+        (*cache) = "";
     }
     // a better server would cut off anything after the newline and
     // save it in a cache
@@ -140,7 +174,7 @@ Server::get_message(int client, int length) {
 
 
 bool
-Server::parse_request(int client, string request) {
+Server::parse_request(int client, string request, string* cache) {
     std::vector<std::string> tokens = util::split(request, ' ');
     if(tokens.size() < 1){ //check vector length
         //cout<<"Invalid Command/n";
@@ -151,14 +185,15 @@ Server::parse_request(int client, string request) {
     bool ret = false;
     if(debug_) cout << command << endl;
     if(command == "put"){
-        ret = put_command(client, tokens);
+        ret = put_command(client, tokens, cache);
     }else if(command == "list"){
         ret = list_command(client, tokens);
     }else if(command == "get"){
         ret = get_command(client, tokens);
     }else if(command == "reset"){
-        delete messageMap_;
-        messageMap_ = new MessageMap();
+
+        delete messageMap_.m;
+        messageMap_.m = new MessageMap();
         ret = send_response(client, "OK\n");
     }else{
         ret = send_response(client, "error invalid command\n");
@@ -168,7 +203,7 @@ Server::parse_request(int client, string request) {
 }
 
 bool 
-Server::put_command(int client, std::vector<std::string> tokens) {
+Server::put_command(int client, std::vector<std::string> tokens, string* cache) {
     string response;
     if(tokens.size() < 4){ //check vector length
         if(debug_) cout<<"not enough arguments";
@@ -182,7 +217,7 @@ Server::put_command(int client, std::vector<std::string> tokens) {
         return send_response(client, "error invalid length parameter\n");
     }
 
-    string message = get_message(client, length);
+    string message = get_message(client, length, cache);
 
     store_message(name,subject,message);
     //respond OK
@@ -220,8 +255,9 @@ Server::get_command(int client,std::vector<std::string> tokens) {
     }
     //use user and index to find message
     MessageMap::iterator it;
-    it = messageMap_->find(name);
-    if(it == messageMap_->end()){ //name doesn't exist
+    sem_wait(&messageMap_.s); //wait your turn!
+    it = messageMap_.m->find(name);
+    if(it == messageMap_.m->end()){ //name doesn't exist
         if(debug_) cout<<name <<": name doesn't exist"<<endl;
         return send_response(client, "error " + name + ": doesn't exist\n");
     } 
@@ -231,6 +267,7 @@ Server::get_command(int client,std::vector<std::string> tokens) {
         return send_response(client, "error index out of bounds\n");
     }
     Message* msg = messageVector.at(index - 1); //-1 because the index starts at 1.
+    sem_post(&messageMap_.s);
     //response = message [subject] [length]\n[message]
     std::stringstream response;
     response << "message " + msg->subject_;
@@ -277,24 +314,26 @@ Server::store_message(string name, string subject, string message){
     MessageMap::iterator it;
 
     Message* newMsg = new Message(subject, message);
-
-    it = messageMap_->find(name);
-    if(it == messageMap_->end()){ //name doesn't exist yet. add it with a new vector to the map.
+    sem_wait(&messageMap_.s);
+    it = messageMap_.m->find(name);
+    if(it == messageMap_.m->end()){ //name doesn't exist yet. add it with a new vector to the map.
         std::pair<MessageMap::iterator,bool> ret;
         vector<Message*>* messageList = new vector<Message*>();
         messageList->push_back(newMsg);
-        ret = messageMap_->insert(std::pair<string,vector<Message*>* >(name,messageList));
+        ret = messageMap_.m->insert(std::pair<string,vector<Message*>* >(name,messageList));
     }else{ //append newMsg to the list
         it->second->push_back(newMsg);
     }
+    sem_post(&messageMap_.s);
 }
 
 string
 Server::get_subjects(string name){
     if(debug_) cout<< "looking for: "<< name << endl;
     MessageMap::iterator it;
-    it = messageMap_->find(name);
-    if(it == messageMap_->end()){ //name doesn't exist
+    sem_wait(&messageMap_.s);
+    it = messageMap_.m->find(name);
+    if(it == messageMap_.m->end()){ //name doesn't exist
         return "list 0\n";
     } 
     vector<Message*> messageVector = *(it->second);
@@ -308,6 +347,7 @@ Server::get_subjects(string name){
         response << i << " ";
         response << (*it)->subject_ << "\n";
     }
+    sem_post(&messageMap_.s);
     return response.str();
 }
 

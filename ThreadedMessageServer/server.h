@@ -15,6 +15,11 @@
 #include <exception>
 #include "util.h"
 
+
+#include <pthread.h>
+#include <semaphore.h>
+#include <queue>
+
 using namespace std;
 
 class Server {
@@ -24,19 +29,19 @@ public:
 
     void run();
     
+    void handle();
 protected:
     virtual void create();
     virtual void close_socket();
     void serve();
-    void handle(int);
-    string read_message(string);
+    string read_message(string, string*);
 
-    string get_message(int, int);
+    string get_message(int, int, string*);
 
-    bool parse_request(int, string);
+    bool parse_request(int, string, string*);
     bool send_response(int client, string response);
 
-    bool put_command(int client, std::vector<std::string> tokens);
+    bool put_command(int client, std::vector<std::string> tokens, string*);
     bool list_command(int client, std::vector<std::string> tokens);
     bool get_command(int client, std::vector<std::string> tokens);
 
@@ -46,7 +51,6 @@ protected:
     int server_;
     int buflen_;
     char* buf_;
-    string cache_;
 
     struct Message{
         string subject_;
@@ -58,9 +62,21 @@ protected:
     };
 
     typedef map<string,vector<Message*>* > MessageMap;
-    MessageMap *messageMap_;
+    struct Data{
+        MessageMap* m;
+        sem_t s;
+    };
+
+    struct Clients{
+        queue<int>* q;
+        sem_t s;
+        sem_t n;
+    };
+    Clients clients_;
+    Data messageMap_;
     bool debug_;
 
+    pthread_t** threads_;
 
 
 };
