@@ -2,6 +2,8 @@
 
 #define NUM_THREADS 10
 
+#define BUFFER_SIZE 10000
+
 Server::Server() {
     // setup variables
     buflen_ = 1024;
@@ -48,7 +50,8 @@ Server::serve() {
     //setup threads
     sem_init(&messageMap_.s,0,1);
     sem_init(&clients_.s,0,1);
-    sem_init(&clients_.n,0,1);
+    sem_init(&clients_.n,0,0);
+    sem_init(&clients_.e,0,BUFFER_SIZE);
 
 
     // setup client
@@ -66,10 +69,11 @@ Server::serve() {
 
       // accept clients
     while ((client = accept(server_,(struct sockaddr *)&client_addr,&clientlen)) > 0) {
+        sem_wait(&clients_.e); //buffer check
         sem_wait(&clients_.s);
         clients_.q->push(client);
         sem_post(&clients_.s);
-        sem_post(&clients_.n);
+        sem_post(&clients_.n); //produce
     }
 
     close_socket();
@@ -82,12 +86,13 @@ Server::handle() {
     string cache = "";
     int client;
     while(1){
-        sem_wait(&clients_.n);
+        sem_wait(&clients_.n); //consume
         sem_wait(&clients_.s);
         client = clients_.q->front();
         clients_.q->pop();
         sem_post(&clients_.s);
-        
+        sem_post(&clients_.e); //buffer free
+        cache = "";
         // loop to handle all requests
         string request;
         while (1) {
@@ -259,11 +264,13 @@ Server::get_command(int client,std::vector<std::string> tokens) {
     it = messageMap_.m->find(name);
     if(it == messageMap_.m->end()){ //name doesn't exist
         if(debug_) cout<<name <<": name doesn't exist"<<endl;
+        sem_post(&messageMap_.s); //be sure to release lock
         return send_response(client, "error " + name + ": doesn't exist\n");
     } 
     vector<Message*> messageVector = *(it->second);
     if(index > messageVector.size()){
         if(debug_) cout<<"index out of bounds"<<endl;
+        sem_post(&messageMap_.s); //release the lock!
         return send_response(client, "error index out of bounds\n");
     }
     Message* msg = messageVector.at(index - 1); //-1 because the index starts at 1.
@@ -310,11 +317,13 @@ Server::send_response(int client, string response) {
 
 void
 Server::store_message(string name, string subject, string message){
-    if(debug_) cout<< "storing: " << name << " " << subject << " " << message <<endl;
+    //if(debug_) cout<< "storing: " << name << " " << subject << " " << message <<endl;
+    if(debug_) cout<< "storing: "<<endl;
     MessageMap::iterator it;
 
     Message* newMsg = new Message(subject, message);
     sem_wait(&messageMap_.s);
+    if(debug_) cout<< "inside messageMap_.s: "<<endl;
     it = messageMap_.m->find(name);
     if(it == messageMap_.m->end()){ //name doesn't exist yet. add it with a new vector to the map.
         std::pair<MessageMap::iterator,bool> ret;
@@ -325,6 +334,8 @@ Server::store_message(string name, string subject, string message){
         it->second->push_back(newMsg);
     }
     sem_post(&messageMap_.s);
+
+    if(debug_) cout<< "outside messageMap_.s: "<<endl;
 }
 
 string

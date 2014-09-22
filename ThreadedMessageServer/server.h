@@ -71,6 +71,7 @@ protected:
         queue<int>* q;
         sem_t s;
         sem_t n;
+        sem_t e;
     };
     Clients clients_;
     Data messageMap_;
