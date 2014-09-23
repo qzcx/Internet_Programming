@@ -6,7 +6,7 @@ MESSAGE-SERVER=		util.o msgd.o msg_server.o server.o
 MESSAGE-CLIENT=		util.o msg.o msg_client.o client.o
 OBJS =			$(MESSAGE-SERVER) $(MESSAGE-CLIENT)
 
-LIBS=		-pthread
+LIBS=		
 
 CCFLAGS= -g
 

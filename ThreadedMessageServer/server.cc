@@ -2,7 +2,7 @@
 
 #define NUM_THREADS 10
 
-#define BUFFER_SIZE 10000
+#define BUFFER_SIZE 100
 
 Server::Server() {
     // setup variables
@@ -23,7 +23,6 @@ Server::~Server() {
     for(int i=0;i< NUM_THREADS; i++){
         delete threads_[i];
     }
-
 }
 
 void
@@ -43,16 +42,36 @@ Server::close_socket() {
 
 void* threadHandle(void * ptr ){
     ((Server *)ptr)->handle();
+    return NULL;
 }
 
 void
 Server::serve() {
     //setup threads
-    sem_init(&messageMap_.s,0,1);
-    sem_init(&clients_.s,0,1);
-    sem_init(&clients_.n,0,0);
-    sem_init(&clients_.e,0,BUFFER_SIZE);
+    //sem_init(messageMap_.s,0,1);
+    //sem_init(clients_.s,0,1);
+    //sem_init(clients_.n,0,0);
+    //sem_init(clients_.e,0,BUFFER_SIZE);
 
+    if ((messageMap_.s = sem_open("messageMap_.s", O_CREAT, 0644, 1)) == SEM_FAILED) {
+        perror("semaphore initilization");
+        exit(1);
+    }
+
+    if ((clients_.s= sem_open("clients_.s", O_CREAT, 0644, 1)) == SEM_FAILED) {
+        perror("semaphore initilization");
+        exit(1);
+    }
+
+    if ((clients_.n = sem_open("clients_.n", O_CREAT, 0644, 0)) == SEM_FAILED) {
+        perror("semaphore initilization");
+        exit(1);
+    }
+
+    if ((clients_.e = sem_open("clients_.e", O_CREAT, 0644, BUFFER_SIZE)) == SEM_FAILED) {
+        perror("semaphore initilization");
+        exit(1);
+    }
 
     // setup client
     int client;
@@ -69,11 +88,11 @@ Server::serve() {
 
       // accept clients
     while ((client = accept(server_,(struct sockaddr *)&client_addr,&clientlen)) > 0) {
-        sem_wait(&clients_.e); //buffer check
-        sem_wait(&clients_.s);
+        sem_wait(clients_.e); //buffer check
+        sem_wait(clients_.s);
         clients_.q->push(client);
-        sem_post(&clients_.s);
-        sem_post(&clients_.n); //produce
+        sem_post(clients_.s);
+        sem_post(clients_.n); //produce
     }
 
     close_socket();
@@ -86,12 +105,12 @@ Server::handle() {
     string cache = "";
     int client;
     while(1){
-        sem_wait(&clients_.n); //consume
-        sem_wait(&clients_.s);
+        sem_wait(clients_.n); //consume
+        sem_wait(clients_.s);
         client = clients_.q->front();
         clients_.q->pop();
-        sem_post(&clients_.s);
-        sem_post(&clients_.e); //buffer free
+        sem_post(clients_.s);
+        sem_post(clients_.e); //buffer free
         cache = "";
         // loop to handle all requests
         string request;
@@ -260,21 +279,21 @@ Server::get_command(int client,std::vector<std::string> tokens) {
     }
     //use user and index to find message
     MessageMap::iterator it;
-    sem_wait(&messageMap_.s); //wait your turn!
+    sem_wait(messageMap_.s); //wait your turn!
     it = messageMap_.m->find(name);
     if(it == messageMap_.m->end()){ //name doesn't exist
         if(debug_) cout<<name <<": name doesn't exist"<<endl;
-        sem_post(&messageMap_.s); //be sure to release lock
+        sem_post(messageMap_.s); //be sure to release lock
         return send_response(client, "error " + name + ": doesn't exist\n");
     } 
     vector<Message*> messageVector = *(it->second);
     if(index > messageVector.size()){
         if(debug_) cout<<"index out of bounds"<<endl;
-        sem_post(&messageMap_.s); //release the lock!
+        sem_post(messageMap_.s); //release the lock!
         return send_response(client, "error index out of bounds\n");
     }
     Message* msg = messageVector.at(index - 1); //-1 because the index starts at 1.
-    sem_post(&messageMap_.s);
+    sem_post(messageMap_.s);
     //response = message [subject] [length]\n[message]
     std::stringstream response;
     response << "message " + msg->subject_;
@@ -322,7 +341,7 @@ Server::store_message(string name, string subject, string message){
     MessageMap::iterator it;
 
     Message* newMsg = new Message(subject, message);
-    sem_wait(&messageMap_.s);
+    sem_wait(messageMap_.s);
     if(debug_) cout<< "inside messageMap_.s: "<<endl;
     it = messageMap_.m->find(name);
     if(it == messageMap_.m->end()){ //name doesn't exist yet. add it with a new vector to the map.
@@ -333,7 +352,7 @@ Server::store_message(string name, string subject, string message){
     }else{ //append newMsg to the list
         it->second->push_back(newMsg);
     }
-    sem_post(&messageMap_.s);
+    sem_post(messageMap_.s);
 
     if(debug_) cout<< "outside messageMap_.s: "<<endl;
 }
@@ -342,9 +361,10 @@ string
 Server::get_subjects(string name){
     if(debug_) cout<< "looking for: "<< name << endl;
     MessageMap::iterator it;
-    sem_wait(&messageMap_.s);
+    sem_wait(messageMap_.s);
     it = messageMap_.m->find(name);
     if(it == messageMap_.m->end()){ //name doesn't exist
+        sem_post(messageMap_.s);
         return "list 0\n";
     } 
     vector<Message*> messageVector = *(it->second);
@@ -358,7 +378,7 @@ Server::get_subjects(string name){
         response << i << " ";
         response << (*it)->subject_ << "\n";
     }
-    sem_post(&messageMap_.s);
+    sem_post(messageMap_.s);
     return response.str();
 }
 

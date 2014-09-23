@@ -64,14 +64,14 @@ protected:
     typedef map<string,vector<Message*>* > MessageMap;
     struct Data{
         MessageMap* m;
-        sem_t s;
+        sem_t* s;
     };
 
     struct Clients{
         queue<int>* q;
-        sem_t s;
-        sem_t n;
-        sem_t e;
+        sem_t* s;
+        sem_t* n;
+        sem_t* e;
     };
     Clients clients_;
     Data messageMap_;
