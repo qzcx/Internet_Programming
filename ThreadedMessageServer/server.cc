@@ -6,17 +6,16 @@
 
 Server::Server() {
     // setup variables
-    buflen_ = 1024;
-    buf_ = new char[buflen_+1];
     messageMap_.m = new MessageMap();
     clients_.q = new std::queue<int>();
+
+    buflen_ = 1024;
     //store_message("jon","love","I love liana");
     //store_message("jon","dog","I love chewy");
     //store_message("jon","girl","I love my wife");
 }
 
 Server::~Server() {
-    delete buf_;
     delete messageMap_.m;
     delete clients_.q;
 
@@ -112,13 +111,16 @@ Server::handle() {
         sem_post(clients_.s);
         sem_post(clients_.e); //buffer free
         cache = "";
+        char* buf;
+
+        buf = new char[buflen_+1];
         // loop to handle all requests
         string request;
         while (1) {
             // get a request
             while (cache.find("\n") == string::npos) {
                 //if(debug_) cout<<"waiting\n";
-                int nread = recv(client,buf_,1024,0);
+                int nread = recv(client,buf,1024,0);
                 if (nread < 0) {
                     if (errno == EINTR)
                         // the socket call was interrupted -- try again
@@ -130,8 +132,8 @@ Server::handle() {
                     // the socket is closed
                     break;
                 }
-                //if(debug_) cout<< "recieved: "<< buf_ << endl;
-                cache.append(buf_,nread);
+                //if(debug_) cout<< "recieved: "<< buf << endl;
+                cache.append(buf,nread);
             }
             request = read_message(cache, &cache);
             if (request.empty()){
@@ -166,10 +168,13 @@ string
 Server::get_message(int client, int length, string* cache) {
     string message = *cache; 
     (*cache) = "";
+    char* buf;
+
+    buf = new char[buflen_+1];
     // read until we get a newline
     while (message.size() < length) {
         //8int readNow = (length - numRead) > 1024 ? 1024 : (length - numRead);
-        int nread = recv(client,buf_,1024,0);
+        int nread = recv(client,buf,1024,0);
         if (nread < 0) {
             if (errno == EINTR)
                 // the socket call was interrupted -- try again
@@ -182,7 +187,7 @@ Server::get_message(int client, int length, string* cache) {
             return "";
         }
         // be sure to use append in case we have binary data
-        message.append(buf_,nread);
+        message.append(buf,nread);
     }
     if(message.size() > length){
         (*cache) = message.substr(length+1,string::npos);

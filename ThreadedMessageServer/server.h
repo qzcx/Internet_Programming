@@ -50,7 +50,7 @@ protected:
 
     int server_;
     int buflen_;
-    char* buf_;
+    
 
     struct Message{
         string subject_;
