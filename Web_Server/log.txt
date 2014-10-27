@@ -1,0 +1,270 @@
+{'default': 'www', 'localhost': 'web'}
+{'jpg': 'image/jpeg', 'gif': 'image/gif', 'html': 'text/html', 'pdf': 'application/pdf', 'txt': 'text/plain', 'png': 'image/png'}
+{'timeout': '1'}
+timeout value is: 1
+handleServer
+acceping: 5
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: 
+handleServer
+acceping: 5
+5 recv: BAD / HTTP/1.1
+Host: localhost
+
+
+message: BAD / HTTP/1.1
+Host: localhost
+Error: not implemented request type: BAD
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET /fjldsfjslf HTTP/1.1
+Host: localhost
+
+
+message: GET /fjldsfjslf HTTP/1.1
+Host: localhost
+404 :  web/fjldsfjslf
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET /static/files/test.txt HTTP/1.1
+Host: localhost
+
+
+message: GET /static/files/test.txt HTTP/1.1
+Host: localhost
+403 :  web/static/files/test.txt
+5 recv: 
+handleServer
+acceping: 5
+5 recv: DELETE / HTTP/1.1
+Host: localhost
+
+
+message: DELETE / HTTP/1.1
+Host: localhost
+Error: not implemented request type: DELETE
+5 recv: 
+handleServer
+acceping: 5
+handleServer
+acceping: 6
+5 recv: GET / 
+error in recv: 11
+Resource temporarily unavailable
+6 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+6 recv: 
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: 
+handleServer
+acceping: 5
+5 recv: BAD / HTTP/1.1
+Host: localhost
+
+
+message: BAD / HTTP/1.1
+Host: localhost
+Error: not implemented request type: BAD
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET /fjldsfjslf HTTP/1.1
+Host: localhost
+
+
+message: GET /fjldsfjslf HTTP/1.1
+Host: localhost
+404 :  web/fjldsfjslf
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET /static/files/test.txt HTTP/1.1
+Host: localhost
+
+
+message: GET /static/files/test.txt HTTP/1.1
+Host: localhost
+403 :  web/static/files/test.txt
+5 recv: 
+handleServer
+acceping: 5
+5 recv: DELETE / HTTP/1.1
+Host: localhost
+
+
+message: DELETE / HTTP/1.1
+Host: localhost
+Error: not implemented request type: DELETE
+5 recv: 
+handleServer
+acceping: 5
+5 recv: GET / 
+error in recv: 11
+Resource temporarily unavailable
+handleServer
+acceping: 6
+6 recv: GET / HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: HTTP/1.1
+Host: localhost
+
+
+message: GET / HTTP/1.1
+Host: localhost
+size:  829
+finished sent
+5 recv: 
+6 recv: 
+handleServer
+acceping: 5
+5 recv: HEAD /static/files/largefile.txt HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+Accept: */*
+User-Agent: python-requests/2.4.1 CPython/2.7.5 Darwin/13.3.0
+
+
+message: HEAD /static/files/largefile.txt HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+Accept-Encoding: gzip, deflate
+Accept: */*
+User-Agent: python-requests/2.4.1 CPython/2.7.5 Darwin/13.3.0
+size:  1743363
+handleServer
+acceping: 6
+6 recv: GET /static/files/largefile.txt HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+Range: bytes=0-999
+Accept-Encoding: identity
+Accept: */*
+User-Agent: python-requests/2.4.1 CPython/2.7.5 Darwin/13.3.0
+
+
+message: GET /static/files/largefile.txt HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+Range: bytes=0-999
+Accept-Encoding: identity
+Accept: */*
+User-Agent: python-requests/2.4.1 CPython/2.7.5 Darwin/13.3.0
+size:  1743363
+finished sent
+5 recv: 
+6 recv: 
+socket timeout: 5
+socket timeout: 6
+socket timeout: 5
+socket timeout: 6
+polling exception

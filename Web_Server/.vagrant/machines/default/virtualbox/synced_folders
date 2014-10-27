@@ -1,0 +1,1 @@
+{"nfs":{"/project":{"type":"nfs","guestpath":"/project","hostpath":"/Users/Jon/fall2014/Internet_Programming/Web_Server","disabled":false,"map_uid":502,"map_gid":20,"nfs_udp":true,"nfs_version":3,"uuid":"1291853139"}},"virtualbox":{"/vagrant":{"guestpath":"/vagrant","hostpath":"/Users/Jon/fall2014/Internet_Programming/Web_Server","disabled":false}}}
