@@ -112,7 +112,7 @@ class ResponseTime:
 
     def generateLoadTest(self):
         interval = self.myServerMu / 10
-        port = 8010
+        port = 3000
         duration = 30
         #output = "myServer-%s.txt" % (name)
 
@@ -126,7 +126,7 @@ class ResponseTime:
             #os.system("python downloadAccelerator.py -n %s %s >> %s" % (thread,url,output))
 
         interval = self.lighttpdMu/10
-        port = 8001
+        port = 3001
         duration = 30
 
         for i in range (0, 10):
