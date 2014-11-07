@@ -122,7 +122,7 @@ class ResponseTime:
         for i in range (0, 10):
             load = (i*interval) + 1
             output = "web-myServer-%s.txt" % int(load)
-            os.system("python generator.py --port %s -l %s -d %s >> %s" % (port, int(load), duration, output))
+            os.system("python tests/generator.py --port %s -l %s -d %s >> %s" % (port, int(load), duration, output))
             #os.system("python downloadAccelerator.py -n %s %s >> %s" % (thread,url,output))
 
         interval = self.lighttpdMu/10
