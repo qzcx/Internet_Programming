@@ -8,8 +8,8 @@ from pylab import *
 
 class ResponseTime:
     def __init__(self):
-        self.myServer = 'http://localhost:8010/file000.txt'
-        self.lighttpd = 'http://localhost:8001/file000.txt'
+        self.myServer = 'http://localhost:3000/file000.txt'
+        self.lighttpd = 'http://localhost:3001/file000.txt'
         self.num = 100
         self.myServerTimes = []
         self.lighttpdTimes = []
