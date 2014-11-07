@@ -14,8 +14,8 @@ def GetServiceSpeed(url, outputFile, results):
 
 def RunNTimes(n):
     GetServiceSpeed("http://localhost:3000/file005.txt", "./ServiceTest.txt", [])
-    for i in range(0,n):
-        results = []
+    results = []
+    for i in range(0,n):  
         GetServiceSpeed("http://localhost:3000/file005.txt", "./ServiceTest.txt", results)
     ans = sum(results)/float(len(results))
     print ans
